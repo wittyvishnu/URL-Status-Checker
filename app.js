@@ -3,7 +3,9 @@ const axios = require("axios");
 
 const app = express();
 app.use(express.json());
-
+app.get("/", (req, res) => {
+    res.status(200).send("OK");
+});
 app.post("/check", async (req, res) => {
 
     const url = req.body?.url;
