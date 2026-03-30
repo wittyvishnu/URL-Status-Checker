@@ -3,9 +3,17 @@ const axios = require("axios");
 
 const app = express();
 app.use(express.json());
+
+/**
+ * Health check route (VERY IMPORTANT for ALB)
+ */
 app.get("/", (req, res) => {
     res.status(200).send("OK");
 });
+
+/**
+ * API to check website status
+ */
 app.post("/check", async (req, res) => {
 
     const url = req.body?.url;
@@ -17,7 +25,6 @@ app.post("/check", async (req, res) => {
     }
 
     try {
-
         const response = await axios.get(url, {
             validateStatus: () => true
         });
@@ -35,20 +42,22 @@ app.post("/check", async (req, res) => {
         }
 
     } catch (error) {
-
         return res.status(500).json({
             website_status: "DOWN",
             message: "Unable to reach website"
         });
-
     }
-
 });
 
-module.exports = app;
-
+/**
+ * Start server (IMPORTANT FIX)
+ */
 if (require.main === module) {
-    app.listen(3000, () => {
-        console.log("Server running on port 3000");
+    const PORT = process.env.PORT || 3000;
+
+    app.listen(PORT, "0.0.0.0", () => {
+        console.log(`Server running on port ${PORT}`);
     });
 }
+
+module.exports = app;
