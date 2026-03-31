@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     stages {
-
         stage('Fetch Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/wittyvishnu/URL-Status-Checker.git'
@@ -27,44 +26,46 @@ pipeline {
                 echo 'Docker image built successfully'
             }
         }
+
         stage('Login to ECR') {
-          steps {
-              withCredentials([
-                  string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'),
-                  string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')
-              ]) {
-                  sh '''
-                  export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-                  export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-                  export AWS_DEFAULT_REGION=us-east-1
-      
-                  /usr/local/bin/aws ecr get-login-password \
-                  | docker login --username AWS \
-                  --password-stdin 928331459079.dkr.ecr.us-east-1.amazonaws.com
-                          '''
+            steps {
+                withCredentials([
+                    string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'),
+                    string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')
+                ]) {
+                    sh '''
+                    export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+                    export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                    export AWS_DEFAULT_REGION=us-east-1
+        
+                    /usr/local/bin/aws ecr get-login-password \
+
+                    | docker login --username AWS \
+                    --password-stdin 928331459079.dkr.ecr.us-east-1.amazonaws.com
+                    '''
                 }
             }
-        }   
-        stage('Push to ECR') {
-          steps {
-              sh '''
-              # Tag with build number
-              docker tag url-status-checker:${BUILD_NUMBER} \
-              928331459079.dkr.ecr.us-east-1.amazonaws.com/url-status-checker:${BUILD_NUMBER}
-              # Push both
-              docker push 928331459079.dkr.ecr.us-east-1.amazonaws.com/url-status-checker:${BUILD_NUMBER}
-              '''
-          }
-      }
-    stage('Cleanup Images') {
-        steps {
-            sh '''
-            docker rmi url-status-checker:${BUILD_NUMBER} || true
-            docker rmi 928331459079.dkr.ecr.us-east-1.amazonaws.com/url-status-checker:${BUILD_NUMBER} || true
-            '''
         }
-    }
-   
-}
-    }
-}
+
+        stage('Push to ECR') {
+            steps {
+                sh '''
+                # Tag with build number
+                docker tag url-status-checker:${BUILD_NUMBER} \
+                928331459079.dkr.ecr.us-east-1.amazonaws.com/url-status-checker:${BUILD_NUMBER}
+                # Push both
+                docker push 928331459079.dkr.ecr.us-east-1.amazonaws.com/url-status-checker:${BUILD_NUMBER}
+                '''
+            }
+        }
+
+        stage('Cleanup Images') {
+            steps {
+                sh '''
+                docker rmi url-status-checker:${BUILD_NUMBER} || true
+                docker rmi 928331459079.dkr.ecr.us-east-1.amazonaws.com/url-status-checker:${BUILD_NUMBER} || true
+                '''
+            }
+        }
+    } // End of stages
+} // End of pipeline
