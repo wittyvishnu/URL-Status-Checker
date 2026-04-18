@@ -10,7 +10,7 @@ app.use(express.json());
  * Health check route (VERY IMPORTANT for ALB)
  */
 app.get("/", (req, res) => {
-    res.status(200).send("OK");
+    res.status(200).send("SERVER IS RUNNING");
 });
 
 /**
