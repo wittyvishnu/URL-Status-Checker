@@ -63,24 +63,26 @@ pipeline {
                     sh '''
                     chmod 400 $KEY_FILE
         
-                    ssh -o StrictHostKeyChecking=no -i $KEY_FILE ubuntu@35.172.180.164 << EOF
+                    ssh -o StrictHostKeyChecking=no -i $KEY_FILE ubuntu@35.172.180.164 "
+                    cd /home/ubuntu/k8s-manifests &&
         
-                    echo "Connected to EC2"
-                    whoami
-        
-                    cd /home/ubuntu/k8s-manifests
-        
-                    echo "Updating image..."
+                    echo 'Updating image...' &&
                     kubectl set image deployment/url-status-checker \
-                    url-checker=928331459079.dkr.ecr.us-east-1.amazonaws.com/url-status-checker:${BUILD_NUMBER}
+                    url-checker=928331459079.dkr.ecr.us-east-1.amazonaws.com/url-status-checker:${BUILD_NUMBER} &&
         
-                    echo "Waiting for rollout..."
-                    kubectl rollout status deployment/url-status-checker
+                    echo 'Waiting for rollout...' &&
+                    kubectl rollout status deployment/url-status-checker &&
         
-                    echo "Pods status:"
-                    kubectl get pods
+                    echo 'Pods status:' &&
+                    kubectl get pods &&
         
-                    EOF
+                    echo 'Service details:' &&
+                    kubectl get svc url-checker-service &&
+        
+                    echo 'LoadBalancer URL:' &&
+                    kubectl get svc url-checker-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' &&
+                    echo ''
+                    "
                     '''
                 }
             }
