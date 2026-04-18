@@ -61,7 +61,7 @@ pipeline {
             steps {
                 sshagent(['kops-ssh-key']) {
                     sh """
-                    ssh -o StrictHostKeyChecking=no ubuntu@<EC2-PUBLIC-IP> << EOF
+                    ssh -o StrictHostKeyChecking=no ubuntu@35.172.180.164 << EOF
                     cd /home/ubuntu/k8s-manifests
         
                     # Update image with new build
