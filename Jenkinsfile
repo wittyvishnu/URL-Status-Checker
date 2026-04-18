@@ -57,28 +57,34 @@ pipeline {
                 '''
             }
         }
-        stage('Deploy to Kubernetes') {
+       stage('Deploy to Kubernetes') {
             steps {
-                sshagent(['kops-ssh-key']) {
-                    sh """
-                    ssh -o StrictHostKeyChecking=no ubuntu@35.172.180.164 << EOF
+                withCredentials([sshUserPrivateKey(credentialsId: 'kops-ssh-key', keyFileVariable: 'KEY_FILE')]) {
+                    sh '''
+                    chmod 400 $KEY_FILE
+        
+                    ssh -o StrictHostKeyChecking=no -i $KEY_FILE ubuntu@35.172.180.164 << EOF
+        
+                    echo "Connected to EC2"
+                    whoami
+        
                     cd /home/ubuntu/k8s-manifests
         
-                    # Update image with new build
+                    echo "Updating image..."
                     kubectl set image deployment/url-status-checker \
                     url-checker=928331459079.dkr.ecr.us-east-1.amazonaws.com/url-status-checker:${BUILD_NUMBER}
         
-                    # Wait for rollout
+                    echo "Waiting for rollout..."
                     kubectl rollout status deployment/url-status-checker
         
-                    # Show pods
+                    echo "Pods status:"
                     kubectl get pods
+        
                     EOF
-                    """
+                    '''
                 }
             }
         }
-
         stage('Cleanup Images') {
             steps {
                 sh '''
