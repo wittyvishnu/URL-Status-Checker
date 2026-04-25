@@ -64,29 +64,27 @@ pipeline {
                     chmod 400 $KEY_FILE
         
                     ssh -o StrictHostKeyChecking=no -i $KEY_FILE ubuntu@172.31.24.6 "
-                    cd /home/ubuntu/k8s-manifests &&
+                        cd /home/ubuntu/k8s-manifests &&
         
-                    echo 'Updating image...' &&
-                    kubectl set image deployment/url-status-checker \
-                    url-checker=928331459079.dkr.ecr.us-east-1.amazonaws.com/url-status-checker:${BUILD_NUMBER} &&
+                        echo 'Updating image to version ${BUILD_NUMBER}...' &&
+                        sudo -E kubectl set image deployment/url-status-checker \\
+                        url-checker=://amazonaws.com{BUILD_NUMBER} --record &&
         
-                    echo 'Waiting for rollout...' &&
-                    kubectl rollout status deployment/url-status-checker &&
+                        echo 'Waiting for rollout...' &&
+                        sudo kubectl rollout status deployment/url-status-checker --timeout=90s &&
         
-                    echo 'Pods status:' &&
-                    kubectl get pods &&
+                        echo 'Current Pods:' &&
+                        sudo kubectl get pods &&
         
-                    echo 'Service details:' &&
-                    kubectl get svc url-checker-service &&
-        
-                    echo 'LoadBalancer URL:' &&
-                    kubectl get svc url-checker-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' &&
-                    echo ''
+                        echo 'Service External URL:' &&
+                        sudo kubectl get svc url-checker-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' &&
+                        echo ''
                     "
                     '''
                 }
             }
         }
+
         stage('Cleanup Images') {
             steps {
                 sh '''
