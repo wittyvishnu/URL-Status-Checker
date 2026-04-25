@@ -63,7 +63,7 @@ pipeline {
                     sh '''
                     chmod 400 $KEY_FILE
         
-                    ssh -o StrictHostKeyChecking=no -i $KEY_FILE ubuntu@35.172.180.164 "
+                    ssh -o StrictHostKeyChecking=no -i $KEY_FILE ubuntu@172.31.24.6 "
                     cd /home/ubuntu/k8s-manifests &&
         
                     echo 'Updating image...' &&
