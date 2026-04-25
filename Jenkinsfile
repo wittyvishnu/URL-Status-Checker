@@ -63,28 +63,30 @@ pipeline {
                     sh '''
                     chmod 400 $KEY_FILE
         
-                    ssh -o StrictHostKeyChecking=no -i $KEY_FILE ubuntu@172.31.24.6 "
-                        cd /home/ubuntu/k8s-manifests &&
+                    ssh -o StrictHostKeyChecking=no -i $KEY_FILE ubuntu@35.172.201.254 "
+                    cd /home/ubuntu/k8s-manifests &&
         
-                        echo 'Updating image to version ${BUILD_NUMBER}...' &&
-                        sudo -E kubectl set image deployment/url-status-checker \\
-                        url-checker=://amazonaws.com{BUILD_NUMBER} --record &&
+                    echo 'Updating image...' &&
+                    kubectl set image deployment/url-status-checker \
+                    url-checker=928331459079.dkr.ecr.us-east-1.amazonaws.com/url-status-checker:${BUILD_NUMBER} &&
         
-                        echo 'Waiting for rollout...' &&
-                        sudo kubectl rollout status deployment/url-status-checker --timeout=90s &&
+                    echo 'Waiting for rollout...' &&
+                    kubectl rollout status deployment/url-status-checker &&
         
-                        echo 'Current Pods:' &&
-                        sudo kubectl get pods &&
+                    echo 'Pods status:' &&
+                    kubectl get pods &&
         
-                        echo 'Service External URL:' &&
-                        sudo kubectl get svc url-checker-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' &&
-                        echo ''
+                    echo 'Service details:' &&
+                    kubectl get svc url-checker-service &&
+        
+                    echo 'LoadBalancer URL:' &&
+                    kubectl get svc url-checker-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' &&
+                    echo ''
                     "
                     '''
                 }
             }
         }
-
         stage('Cleanup Images') {
             steps {
                 sh '''
